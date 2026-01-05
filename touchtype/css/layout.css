@@ -1,0 +1,231 @@
+/**
+ * Layout Styles
+ * Page structure and responsive grid
+ */
+
+/* ========== APP CONTAINER ========== */
+.app-container {
+  position: relative;
+  z-index: var(--z-above);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+  min-height: 100vh;
+}
+
+/* ========== HEADER ========== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xl) 0;
+  margin-bottom: var(--space-3xl);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.start-logo {
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
+}
+
+.logo-text {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-stats {
+  display: flex;
+  gap: var(--space-3xl);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ========== MAIN LAYOUT ========== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-3xl);
+}
+
+.typing-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ========== STATS BAR ========== */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+
+/* ========== START SCREEN ========== */
+.start-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-3xl);
+}
+
+.start-screen.hidden {
+  display: none;
+}
+
+.start-title {
+  font-size: var(--text-5xl);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.start-subtitle {
+  font-size: var(--text-xl);
+  color: var(--text-secondary);
+  max-width: 500px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.features-list {
+  display: flex;
+  gap: 40px;
+  margin-top: var(--space-xl);
+}
+
+.feature-item {
+  text-align: center;
+}
+
+.feature-icon {
+  font-size: 32px;
+  margin-bottom: var(--space-sm);
+}
+
+.feature-text {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1200px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: var(--space-md);
+  }
+
+  .header {
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .header-stats {
+    gap: var(--space-xl);
+  }
+
+  .stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .text-display {
+    font-size: var(--text-lg);
+    padding: var(--space-xl);
+  }
+
+  .start-title {
+    font-size: 40px;
+  }
+
+  .start-subtitle {
+    font-size: var(--text-md);
+    padding: 0 var(--space-xl);
+  }
+
+  .features-list {
+    gap: var(--space-xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .header-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stats-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .features-list {
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+}

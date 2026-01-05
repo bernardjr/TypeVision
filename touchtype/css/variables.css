@@ -1,0 +1,82 @@
+/**
+ * CSS Variables - Design Tokens
+ * Central location for all design system values
+ */
+
+:root {
+  /* Colors - Background */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a25;
+  --bg-card: #15151f;
+
+  /* Colors - Accent */
+  --accent-primary: #00f5d4;
+  --accent-secondary: #7b61ff;
+  --accent-warning: #ff6b6b;
+  --accent-success: #00f5d4;
+  --accent-gold: #ffd700;
+
+  /* Colors - Text */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+
+  /* Colors - Borders */
+  --border-color: #2a2a3a;
+
+  /* Colors - Glows */
+  --glow-primary: rgba(0, 245, 212, 0.3);
+  --glow-secondary: rgba(123, 97, 255, 0.3);
+  --glow-warning: rgba(255, 107, 107, 0.4);
+
+  /* Typography */
+  --font-primary: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Font Sizes */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 24px;
+  --text-3xl: 28px;
+  --text-4xl: 32px;
+  --text-5xl: 64px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 30px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.1s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px var(--glow-primary);
+  --shadow-glow-warning: 0 0 30px var(--glow-warning);
+
+  /* Z-Index Scale */
+  --z-base: 0;
+  --z-above: 1;
+  --z-overlay: 100;
+  --z-modal: 200;
+}

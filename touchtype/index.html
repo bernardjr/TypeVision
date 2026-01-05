@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeVision — Touch Typing Trainer</title>
+  
+  <!-- External Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/keyboard.css">
+  <link rel="stylesheet" href="css/camera.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Start Screen -->
+  <div class="start-screen" id="startScreen">
+    <div class="logo-icon start-logo">⌨️</div>
+    <h1 class="start-title">TypeVision</h1>
+    <p class="start-subtitle">Master touch typing with AI-powered camera monitoring. Keep your eyes on the screen — we're watching.</p>
+    <button class="btn btn-primary btn-large" id="startBtn">Begin Training</button>
+    <div class="features-list">
+      <div class="feature-item">
+        <div class="feature-icon">📷</div>
+        <div class="feature-text">Camera Tracking</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-text">Adaptive Learning</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-text">Achievements</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Penalty Overlay -->
+  <div class="penalty-overlay" id="penaltyOverlay"></div>
+  <div class="penalty-message" id="penaltyMessage">
+    <h2>👀 Eyes Up!</h2>
+    <p>Keep your eyes on the screen, not the keyboard!</p>
+  </div>
+
+  <!-- Main App Container -->
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">⌨️</div>
+        <span class="logo-text">TypeVision</span>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="totalXP">0</div>
+          <div class="stat-label">Total XP</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="streak">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="bestWPM">0</div>
+          <div class="stat-label">Best WPM</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-layout">
+      <!-- Typing Section -->
+      <div class="typing-section">
+        <!-- Mode Selector -->
+        <div class="card" id="modeCard">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10,8 16,12 10,16"></polygon>
+            </svg>
+            Practice Mode
+          </div>
+          <div class="mode-selector" id="modeSelector"></div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+          <div class="stat-card">
+            <div class="stat-card-value wpm" id="currentWPM">0</div>
+            <div class="stat-card-label">WPM</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-value accuracy" id="currentAccuracy">100</div>
+            <div class="stat-card-label">Accuracy %</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-value errors" id="currentErrors">0</div>
+            <div class="stat-card-label">Errors</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-value penalties" id="currentPenalties">0</div>
+            <div class="stat-card-label">Look Penalties</div>
+          </div>
+        </div>
+
+        <!-- Text Display -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            Type the text below
+          </div>
+          <div class="text-display" id="textDisplay"></div>
+          <input 
+            type="text" 
+            class="typing-input" 
+            id="typingInput" 
+            placeholder="Click here and start typing..." 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false"
+          >
+        </div>
+
+        <!-- Keyboard Visualization -->
+        <div class="card keyboard-container" id="keyboardContainer">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+              <line x1="6" y1="8" x2="6" y2="8"></line>
+            </svg>
+            Keyboard — Home Row Position
+          </div>
+          <div class="keyboard" id="keyboard"></div>
+          <div class="finger-guide" id="fingerGuide"></div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <!-- Camera Section -->
+        <div class="card camera-section">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            Eye Tracking
+          </div>
+          <div class="camera-container" id="cameraContainer">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvasOutput"></canvas>
+            <div class="camera-overlay" id="cameraOverlay">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <p>Enable camera to track<br>if you're looking down</p>
+              <button class="btn btn-primary" id="enableCameraBtn">Enable Camera</button>
+            </div>
+            <div class="camera-status good hidden" id="cameraStatus">
+              <span class="status-dot"></span>
+              <span id="statusText">Eyes on screen</span>
+            </div>
+            <div class="head-pitch-indicator hidden" id="pitchIndicator">
+              <div class="pitch-bar" id="pitchBar"></div>
+              <span class="pitch-label" id="pitchLabel">0°</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+            Progress
+          </div>
+          <div class="xp-bar-container">
+            <div class="xp-info">
+              <span class="xp-level" id="levelText">Level 1</span>
+              <span class="xp-amount">
+                <span id="currentLevelXP">0</span> / <span id="nextLevelXP">100</span> XP
+              </span>
+            </div>
+            <div class="xp-bar">
+              <div class="xp-fill" id="xpFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+            Achievements
+          </div>
+          <div class="achievements-grid" id="achievementsGrid"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Settings
+          </div>
+          <div id="settingsContainer"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

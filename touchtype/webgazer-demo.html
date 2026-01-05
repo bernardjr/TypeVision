@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGazer.js Demo - Screen vs Keyboard Detection</title>
+
+    <!-- WebGazer.js -->
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --card: #15151f;
+        --accent: #00f5d4;
+        --warning: #ff6b6b;
+        --text: #ffffff;
+        --muted: #888;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--accent), #7b61ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin-bottom: 30px;
+      }
+
+      .container {
+        max-width: 800px;
+        width: 100%;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+
+      .status-bar {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .status-item {
+        text-align: center;
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        min-width: 120px;
+      }
+
+      .status-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        font-family: "Courier New", monospace;
+      }
+
+      .status-value.looking-screen {
+        color: var(--accent);
+      }
+      .status-value.looking-keyboard {
+        color: var(--warning);
+      }
+
+      .status-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 4px;
+      }
+
+      .gaze-indicator {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 245, 212, 0.1) 0%,
+          rgba(0, 245, 212, 0.1) 70%,
+          rgba(255, 107, 107, 0.1) 70%,
+          rgba(255, 107, 107, 0.1) 100%
+        );
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        margin: 20px 0;
+      }
+
+      .gaze-indicator::before {
+        content: "SCREEN ZONE";
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--accent);
+        font-size: 0.8rem;
+        opacity: 0.5;
+      }
+
+      .gaze-indicator::after {
+        content: "KEYBOARD ZONE";
+        position: absolute;
+        bottom: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--warning);
+        font-size: 0.8rem;
+        opacity: 0.5;
+      }
+
+      .gaze-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--warning);
+        bottom: 30%;
+      }
+
+      .gaze-dot {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: var(--accent);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: all 0.1s ease;
+        box-shadow: 0 0 20px var(--accent);
+      }
+
+      .gaze-dot.warning {
+        background: var(--warning);
+        box-shadow: 0 0 20px var(--warning);
+      }
+
+      .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #7b61ff, var(--accent));
+        color: var(--bg);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.3);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .warning-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 107, 107, 0.15);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 100;
+      }
+
+      .warning-overlay.active {
+        opacity: 1;
+      }
+
+      .video-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--accent);
+        z-index: 50;
+      }
+
+      .video-container.warning {
+        border-color: var(--warning);
+      }
+
+      #webgazerVideoFeed {
+        width: 100%;
+        transform: scaleX(-1);
+      }
+
+      .calibration-point {
+        position: fixed;
+        width: 30px;
+        height: 30px;
+        background: var(--accent);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        animation: pulse 1s infinite;
+        z-index: 1000;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.3);
+          opacity: 0.7;
+        }
+      }
+
+      .calibration-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      .calibration-overlay.active {
+        display: flex;
+      }
+
+      .calibration-message {
+        text-align: center;
+        max-width: 400px;
+      }
+
+      .calibration-message h2 {
+        margin-bottom: 15px;
+      }
+
+      .calibration-message p {
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+
+      .instructions {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 20px;
+      }
+
+      .instructions h3 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        color: var(--accent);
+      }
+
+      .instructions ol {
+        padding-left: 20px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .penalty-count {
+        font-size: 3rem;
+        color: var(--warning);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="warning-overlay" id="warningOverlay"></div>
+
+    <div class="video-container" id="videoContainer">
+      <!-- WebGazer will inject video here -->
+    </div>
+
+    <h1>👀 Gaze Tracker Demo</h1>
+    <p class="subtitle">
+      Detecting if you're looking at the screen or keyboard
+    </p>
+
+    <div class="container">
+      <div class="card">
+        <div class="status-bar">
+          <div class="status-item">
+            <div class="status-value looking-screen" id="gazeStatus">--</div>
+            <div class="status-label">Looking At</div>
+          </div>
+          <div class="status-item">
+            <div class="status-value" id="gazeX">0</div>
+            <div class="status-label">Gaze X</div>
+          </div>
+          <div class="status-item">
+            <div class="status-value" id="gazeY">0</div>
+            <div class="status-label">Gaze Y</div>
+          </div>
+          <div class="status-item">
+            <div class="status-value penalty-count" id="penaltyCount">0</div>
+            <div class="status-label">Penalties</div>
+          </div>
+        </div>
+
+        <div class="gaze-indicator" id="gazeIndicator">
+          <div class="gaze-line"></div>
+          <div class="gaze-dot" id="gazeDot"></div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-primary" id="startBtn">Start Tracking</button>
+          <button class="btn btn-secondary" id="calibrateBtn" disabled>
+            Calibrate
+          </button>
+          <button class="btn btn-secondary" id="stopBtn" disabled>Stop</button>
+        </div>
+
+        <div class="instructions">
+          <h3>How It Works</h3>
+          <ol>
+            <li>Click "Start Tracking" and allow camera access</li>
+            <li>
+              Click "Calibrate" and follow the dots (look at each dot and click)
+            </li>
+            <li>After calibration, the system tracks where you're looking</li>
+            <li>If you look down (at keyboard), a penalty is triggered!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calibration Overlay -->
+    <div class="calibration-overlay" id="calibrationOverlay">
+      <div class="calibration-message">
+        <h2>Calibration</h2>
+        <p>
+          Look at each dot and click it. This teaches the system where your eyes
+          are looking.
+        </p>
+        <button class="btn btn-primary" id="startCalibrationBtn">
+          Begin Calibration
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // State
+      let isTracking = false;
+      let isCalibrated = false;
+      let penaltyCount = 0;
+      let penaltyCooldown = false;
+      let isLookingDown = false;
+
+      // DOM Elements
+      const startBtn = document.getElementById("startBtn");
+      const calibrateBtn = document.getElementById("calibrateBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const gazeStatus = document.getElementById("gazeStatus");
+      const gazeX = document.getElementById("gazeX");
+      const gazeY = document.getElementById("gazeY");
+      const penaltyCountEl = document.getElementById("penaltyCount");
+      const gazeDot = document.getElementById("gazeDot");
+      const gazeIndicator = document.getElementById("gazeIndicator");
+      const warningOverlay = document.getElementById("warningOverlay");
+      const videoContainer = document.getElementById("videoContainer");
+      const calibrationOverlay = document.getElementById("calibrationOverlay");
+      const startCalibrationBtn = document.getElementById(
+        "startCalibrationBtn"
+      );
+
+      // Calibration points (9-point grid)
+      const calibrationPoints = [
+        { x: 10, y: 10 },
+        { x: 50, y: 10 },
+        { x: 90, y: 10 },
+        { x: 10, y: 50 },
+        { x: 50, y: 50 },
+        { x: 90, y: 50 },
+        { x: 10, y: 90 },
+        { x: 50, y: 90 },
+        { x: 90, y: 90 },
+      ];
+
+      // Start WebGazer
+      async function startTracking() {
+        try {
+          // Configure WebGazer
+          webgazer
+            .setRegression("ridge")
+            .showVideoPreview(true)
+            .showPredictionPoints(true)
+            .showFaceOverlay(true)
+            .showFaceFeedbackBox(true);
+
+          // Start
+          await webgazer.begin();
+
+          // Move video to our container
+          const video = webgazer.getVideoElement();
+          if (video) {
+            video.id = "webgazerVideoFeed";
+            videoContainer.appendChild(video);
+          }
+
+          // Set up gaze listener
+          webgazer.setGazeListener((data, elapsedTime) => {
+            if (data) {
+              updateGaze(data.x, data.y);
+            }
+          });
+
+          isTracking = true;
+          startBtn.disabled = true;
+          calibrateBtn.disabled = false;
+          stopBtn.disabled = false;
+        } catch (error) {
+          console.error("Failed to start WebGazer:", error);
+          alert(
+            "Failed to start camera. Please ensure camera permissions are granted."
+          );
+        }
+      }
+
+      // Stop WebGazer
+      function stopTracking() {
+        webgazer.end();
+        isTracking = false;
+        startBtn.disabled = false;
+        calibrateBtn.disabled = true;
+        stopBtn.disabled = true;
+        gazeStatus.textContent = "--";
+      }
+
+      // Update gaze position
+      function updateGaze(x, y) {
+        // Update display
+        gazeX.textContent = Math.round(x);
+        gazeY.textContent = Math.round(y);
+
+        // Update gaze dot visualization
+        const indicatorRect = gazeIndicator.getBoundingClientRect();
+        const normalizedX = (x / window.innerWidth) * 100;
+        const normalizedY = (y / window.innerHeight) * 100;
+
+        gazeDot.style.left = `${Math.min(100, Math.max(0, normalizedX))}%`;
+        gazeDot.style.top = `${Math.min(100, Math.max(0, normalizedY * 1.5))}%`;
+
+        // Determine if looking at screen or keyboard
+        // If Y > viewport height (or significantly below visible area), user is looking down
+        const threshold = window.innerHeight * 0.9; // 90% of screen height
+
+        const wasLookingDown = isLookingDown;
+        isLookingDown = y > threshold;
+
+        if (isLookingDown) {
+          gazeStatus.textContent = "KEYBOARD";
+          gazeStatus.classList.remove("looking-screen");
+          gazeStatus.classList.add("looking-keyboard");
+          gazeDot.classList.add("warning");
+          videoContainer.classList.add("warning");
+
+          // Trigger penalty
+          if (!wasLookingDown && !penaltyCooldown) {
+            triggerPenalty();
+          }
+        } else {
+          gazeStatus.textContent = "SCREEN";
+          gazeStatus.classList.add("looking-screen");
+          gazeStatus.classList.remove("looking-keyboard");
+          gazeDot.classList.remove("warning");
+          videoContainer.classList.remove("warning");
+        }
+      }
+
+      // Trigger penalty
+      function triggerPenalty() {
+        penaltyCount++;
+        penaltyCountEl.textContent = penaltyCount;
+
+        // Visual feedback
+        warningOverlay.classList.add("active");
+        setTimeout(() => warningOverlay.classList.remove("active"), 500);
+
+        // Cooldown to prevent spam
+        penaltyCooldown = true;
+        setTimeout(() => (penaltyCooldown = false), 2000);
+
+        // Audio feedback (optional)
+        const audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioCtx.destination);
+        oscillator.frequency.value = 200;
+        gain.gain.value = 0.1;
+        oscillator.start();
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioCtx.currentTime + 0.3
+        );
+        oscillator.stop(audioCtx.currentTime + 0.3);
+      }
+
+      // Calibration
+      let currentCalibrationPoint = 0;
+
+      function showCalibration() {
+        calibrationOverlay.classList.add("active");
+      }
+
+      function startCalibration() {
+        calibrationOverlay.classList.remove("active");
+        currentCalibrationPoint = 0;
+        showNextCalibrationPoint();
+      }
+
+      function showNextCalibrationPoint() {
+        // Remove previous point
+        const existingPoint = document.querySelector(".calibration-point");
+        if (existingPoint) existingPoint.remove();
+
+        if (currentCalibrationPoint >= calibrationPoints.length) {
+          // Calibration complete
+          isCalibrated = true;
+          alert(
+            "Calibration complete! The system should now track your gaze more accurately."
+          );
+          return;
+        }
+
+        const point = calibrationPoints[currentCalibrationPoint];
+        const pointEl = document.createElement("div");
+        pointEl.className = "calibration-point";
+        pointEl.style.left = `${point.x}%`;
+        pointEl.style.top = `${point.y}%`;
+
+        pointEl.addEventListener("click", () => {
+          // WebGazer automatically records calibration data on click
+          currentCalibrationPoint++;
+          showNextCalibrationPoint();
+        });
+
+        document.body.appendChild(pointEl);
+      }
+
+      // Event Listeners
+      startBtn.addEventListener("click", startTracking);
+      stopBtn.addEventListener("click", stopTracking);
+      calibrateBtn.addEventListener("click", showCalibration);
+      startCalibrationBtn.addEventListener("click", startCalibration);
+
+      // Clean up on page unload
+      window.addEventListener("beforeunload", () => {
+        if (isTracking) {
+          webgazer.end();
+        }
+      });
+    </script>
+  </body>
+</html>
