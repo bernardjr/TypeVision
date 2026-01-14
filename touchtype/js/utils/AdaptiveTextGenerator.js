@@ -41,7 +41,7 @@ export class AdaptiveTextGenerator {
       'he': ['the', 'there', 'these', 'when', 'where', 'whether', 'other', 'another', 'check'],
       'in': ['into', 'think', 'within', 'include', 'industry', 'information', 'training', 'morning'],
       'er': ['other', 'where', 'there', 'after', 'never', 'under', 'over', 'general', 'service'],
-      'an': 'another', 'many', 'any', 'than', 'change', 'want', 'plan', 'understand', 'land'],
+      'an': ['another', 'many', 'any', 'than', 'change', 'want', 'plan', 'understand', 'land'],
       're': ['there', 'where', 'were', 'more', 'great', 'require', 'represent', 'three', 'present'],
       'on': ['one', 'only', 'into', 'national', 'information', 'question', 'among', 'continue'],
       'at': ['that', 'what', 'state', 'national', 'information', 'education', 'create', 'later'],
