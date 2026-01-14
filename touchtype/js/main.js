@@ -9,10 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
   
-  // Expose to window for debugging (optional)
-  if (process.env?.NODE_ENV === 'development') {
-    window.app = app;
-  }
+  // Expose to window for debugging
+  window.app = app;
 });
 
 // Handle unhandled errors
