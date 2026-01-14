@@ -120,21 +120,51 @@
 }
 
 .mode-btn {
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 10px 16px;
   border: 1px solid var(--border-color);
   background: var(--bg-tertiary);
   color: var(--text-secondary);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-family: var(--font-primary);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 500;
   transition: all var(--transition-normal);
+  position: relative;
+}
+
+.mode-icon {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.mode-name {
+  white-space: nowrap;
+}
+
+.new-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  background: rgba(0, 245, 212, 0.15);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mode-btn.new-feature {
+  border-color: rgba(0, 245, 212, 0.3);
 }
 
 .mode-btn:hover {
   border-color: var(--accent-secondary);
   color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
 .mode-btn.active {
@@ -142,6 +172,11 @@
   border-color: transparent;
   color: var(--bg-primary);
   font-weight: 600;
+}
+
+.mode-btn.active .new-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--bg-primary);
 }
 
 /* ========== TEXT DISPLAY ========== */

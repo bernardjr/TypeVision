@@ -10,6 +10,8 @@ export class Keyboard {
     this.fingerGuideContainer = fingerGuideContainer;
     this.keys = new Map();
     this.visible = true;
+    this.heatmapEnabled = false;
+    this.heatmapData = {};
     
     // Keyboard layout
     this.layout = [
@@ -229,5 +231,83 @@ export class Keyboard {
     this.keys.forEach(keyEl => {
       keyEl.classList.remove('active', 'error', 'expected');
     });
+  }
+
+  /**
+   * Enable heatmap visualization
+   * @param {Object} heatmapData - Object with keys and accuracy scores (0-1)
+   */
+  enableHeatmap(heatmapData) {
+    this.heatmapEnabled = true;
+    this.heatmapData = heatmapData;
+    this._applyHeatmap();
+  }
+
+  /**
+   * Disable heatmap visualization
+   */
+  disableHeatmap() {
+    this.heatmapEnabled = false;
+    this._clearHeatmap();
+  }
+
+  /**
+   * Update heatmap data
+   * @param {Object} heatmapData - Updated heatmap data
+   */
+  updateHeatmap(heatmapData) {
+    this.heatmapData = heatmapData;
+    if (this.heatmapEnabled) {
+      this._applyHeatmap();
+    }
+  }
+
+  /**
+   * Apply heatmap colors to keys
+   * @private
+   */
+  _applyHeatmap() {
+    this.keys.forEach((keyEl, key) => {
+      const normalizedKey = key.toLowerCase();
+      const score = this.heatmapData[normalizedKey];
+
+      if (score !== undefined) {
+        // Remove any existing heatmap classes
+        keyEl.classList.remove('heatmap-poor', 'heatmap-fair', 'heatmap-good', 'heatmap-excellent');
+
+        // Apply heatmap class based on score (0-1 scale)
+        if (score < 0.5) {
+          keyEl.classList.add('heatmap-poor'); // Red - needs work
+        } else if (score < 0.75) {
+          keyEl.classList.add('heatmap-fair'); // Orange - improving
+        } else if (score < 0.9) {
+          keyEl.classList.add('heatmap-good'); // Yellow - good
+        } else {
+          keyEl.classList.add('heatmap-excellent'); // Green - mastered
+        }
+      }
+    });
+  }
+
+  /**
+   * Clear heatmap colors from all keys
+   * @private
+   */
+  _clearHeatmap() {
+    this.keys.forEach(keyEl => {
+      keyEl.classList.remove('heatmap-poor', 'heatmap-fair', 'heatmap-good', 'heatmap-excellent');
+    });
+  }
+
+  /**
+   * Toggle heatmap on/off
+   */
+  toggleHeatmap() {
+    if (this.heatmapEnabled) {
+      this.disableHeatmap();
+    } else {
+      this.enableHeatmap(this.heatmapData);
+    }
+    return this.heatmapEnabled;
   }
 }

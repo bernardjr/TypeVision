@@ -2,6 +2,10 @@
  * TextGenerator Class
  * Provides text content for different typing modes
  */
+import { keyStatsManager } from '../managers/KeyStatisticsManager.js';
+import { adaptiveTextGenerator } from './AdaptiveTextGenerator.js';
+import { lessonManager } from '../managers/LessonManager.js';
+
 export class TextGenerator {
   constructor() {
     // Sample texts organized by mode
@@ -76,11 +80,64 @@ export class TextGenerator {
   /**
    * Get random text for a mode
    * @param {string} mode - Typing mode
+   * @param {Object} options - Additional options
    * @returns {string}
    */
-  getText(mode = 'standard') {
-    const texts = this.texts[mode] || this.texts.standard;
-    return texts[Math.floor(Math.random() * texts.length)];
+  getText(mode = 'standard', options = {}) {
+    // Handle special modes
+    switch (mode) {
+      case 'adaptive':
+        return this.getAdaptiveText();
+      case 'errorCorrection':
+        return this.getErrorCorrectionText();
+      case 'lesson':
+        return this.getLessonText(options.lessonId);
+      default:
+        const texts = this.texts[mode] || this.texts.standard;
+        return texts[Math.floor(Math.random() * texts.length)];
+    }
+  }
+
+  /**
+   * Get adaptive text targeting user's weak keys
+   * @returns {string}
+   */
+  getAdaptiveText() {
+    const weakKeys = keyStatsManager.getTopWeakKeys(5);
+    if (weakKeys.length === 0) {
+      // No data yet, use standard text
+      return this.getText('standard');
+    }
+    return adaptiveTextGenerator.generateNaturalText(weakKeys, 3);
+  }
+
+  /**
+   * Get error correction drill text
+   * @returns {string}
+   */
+  getErrorCorrectionText() {
+    const weakKeys = keyStatsManager.getTopWeakKeys(3);
+    if (weakKeys.length === 0) {
+      return this.getText('standard');
+    }
+    // Focus on the single weakest key
+    return adaptiveTextGenerator.generateErrorCorrectionDrill(weakKeys[0]);
+  }
+
+  /**
+   * Get text for a specific lesson
+   * @param {string} lessonId - Lesson ID
+   * @returns {string}
+   */
+  getLessonText(lessonId) {
+    if (!lessonId) {
+      // Get next recommended lesson
+      const nextLesson = lessonManager.getNextLesson();
+      return nextLesson ? nextLesson.text : this.getText('standard');
+    }
+
+    const lesson = lessonManager.getLesson(lessonId);
+    return lesson ? lesson.text : this.getText('standard');
   }
 
   /**
@@ -186,6 +243,18 @@ export class TextGenerator {
       quotes: {
         name: 'Quotes',
         description: 'Famous quotes and inspirational text'
+      },
+      adaptive: {
+        name: 'Adaptive Practice',
+        description: 'AI-powered text targeting your weak keys'
+      },
+      errorCorrection: {
+        name: 'Error Correction',
+        description: 'Focused drills on your most problematic keys'
+      },
+      lesson: {
+        name: 'Structured Lessons',
+        description: 'Progressive curriculum from basics to mastery'
       }
     };
 

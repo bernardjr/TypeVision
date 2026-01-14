@@ -13,6 +13,8 @@ import { Keyboard } from './components/Keyboard.js';
 import { TextDisplay } from './components/TextDisplay.js';
 import { AchievementSystem } from './components/AchievementSystem.js';
 import { textGenerator } from './utils/TextGenerator.js';
+import { keyStatsManager } from './managers/KeyStatisticsManager.js';
+import { lessonManager } from './managers/LessonManager.js';
 
 export class App {
   constructor() {
@@ -26,18 +28,22 @@ export class App {
     
     // Modes configuration
     this.modes = [
-      { id: 'standard', name: 'Standard' },
-      { id: 'blind', name: 'Blind Mode' },
-      { id: 'burst', name: 'Burst (30s)' },
-      { id: 'words', name: 'Common Words' },
-      { id: 'code', name: 'Code Mode' }
+      { id: 'standard', name: 'Standard', icon: '📝' },
+      { id: 'adaptive', name: 'Adaptive', icon: '🎯', new: true },
+      { id: 'lesson', name: 'Lessons', icon: '🎓', new: true },
+      { id: 'errorCorrection', name: 'Drills', icon: '🔧', new: true },
+      { id: 'blind', name: 'Blind Mode', icon: '🙈' },
+      { id: 'burst', name: 'Burst (30s)', icon: '⚡' },
+      { id: 'words', name: 'Common Words', icon: '📖' },
+      { id: 'code', name: 'Code Mode', icon: '💻' }
     ];
 
     // Settings configuration
     this.settingsConfig = [
       { id: 'soundEnabled', label: 'Sound Effects', default: true },
       { id: 'flashEnabled', label: 'Penalty Screen Flash', default: true },
-      { id: 'keyboardVisible', label: 'Show Keyboard', default: true }
+      { id: 'keyboardVisible', label: 'Show Keyboard', default: true },
+      { id: 'heatmapEnabled', label: 'Show Heatmap', default: false }
     ];
   }
 
@@ -257,13 +263,16 @@ export class App {
    */
   _renderModeSelector() {
     const currentMode = appState.get('settings.currentMode');
-    
+
     this.elements.modeSelector.innerHTML = this.modes.map(mode => `
-      <button 
-        class="mode-btn ${mode.id === currentMode ? 'active' : ''}" 
+      <button
+        class="mode-btn ${mode.id === currentMode ? 'active' : ''} ${mode.new ? 'new-feature' : ''}"
         data-mode="${mode.id}"
+        title="${textGenerator.getModeInfo(mode.id).description}"
       >
-        ${mode.name}
+        ${mode.icon ? `<span class="mode-icon">${mode.icon}</span>` : ''}
+        <span class="mode-name">${mode.name}</span>
+        ${mode.new ? '<span class="new-badge">NEW</span>' : ''}
       </button>
     `).join('');
 
@@ -402,6 +411,14 @@ export class App {
         break;
       case 'keyboardVisible':
         this.keyboard.setVisible(value);
+        break;
+      case 'heatmapEnabled':
+        if (value) {
+          const heatmapData = keyStatsManager.getHeatmapData();
+          this.keyboard.enableHeatmap(heatmapData);
+        } else {
+          this.keyboard.disableHeatmap();
+        }
         break;
       // flashEnabled is handled by PenaltyManager via event
     }

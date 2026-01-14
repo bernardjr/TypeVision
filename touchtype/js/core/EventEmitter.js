@@ -123,4 +123,11 @@ export const Events = {
   STATS_UPDATE: 'ui:statsUpdate',
   KEY_PRESSED: 'ui:keyPressed',
   KEY_ERROR: 'ui:keyError',
+
+  // Lesson events
+  LESSON_COMPLETE: 'lesson:complete',
+  LESSON_PROGRESS_RESET: 'lesson:progressReset',
+
+  // Key statistics events
+  KEY_STATS_RESET: 'keyStats:reset',
 };
